@@ -1,0 +1,25 @@
+[package]
+name = "rust-sqs"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[[bin]]
+name = "bootstrap"
+path = "src/main.rs"
+
+[dependencies]
+lambda_runtime = "0.4.1"
+aws-config = "0.0.22-alpha"
+aws-sdk-dynamodb = "0.0.22-alpha"
+aws-sdk-sqs = "0.0.22-alpha"
+aws-types = "0.0.22-alpha"
+log = "0.4.14"
+serde = "1.0.130"
+serde_json = "1.0.68"
+simple_logger = "1.13.0"
+tokio = "1.12.0"
+async-trait = "0.1.51"
+aws_lambda_events = "0.5.0"
+futures = "0.3.17"
+uuid = { version = "0.8", features = ["v4"] }

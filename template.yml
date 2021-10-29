@@ -1,0 +1,83 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: sam-app
+
+Globals:
+  Function:
+    Timeout: 30
+    Environment:
+      Variables:
+        RUST_BACKTRACE: 1
+        RUST_LOG: info
+        TABLE_NAME: !Ref Table
+        OUTPUT_SQS: !Ref OutputSqsQueue
+
+Resources:
+  Table:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+
+  InputSqsQueue:
+    Type: AWS::SQS::Queue
+  
+  OutputSqsQueue:
+    Type: AWS::SQS::Queue
+
+  HelloRustFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: bootstrap.is.real.handler
+      Runtime: provided
+      MemorySize: 128
+      CodeUri: ./rust.zip
+      Events:
+        MySQSEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt InputSqsQueue.Arn
+            BatchSize: 10
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action: 
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+              Resource: !GetAtt Table.Arn
+            - Effect: Allow
+              Action:
+                - 'sqs:SendMessage'
+              Resource: !GetAtt OutputSqsQueue.Arn
+
+Outputs:
+  HelloRustFunction:
+    Description: "Hello Rust Lambda Function ARN"
+    Value: !GetAtt HelloRustFunction.Arn
+  DynamodbTable:
+    Description: "DynamoDB table ARN"
+    Value: !GetAtt Table.Arn
+  InputSqsQueueName:
+    Description: SNS queue name
+    Value: !GetAtt InputSqsQueue.QueueName
+  InputSqsQueueARN:
+    Description: SQS queue ARN
+    Value: !GetAtt InputSqsQueue.Arn
+  InputSqsQueueURL:
+    Description: SQS queue URL
+    Value: !Ref InputSqsQueue
+  OutputSqsQueueName:
+    Description: SNS queue name
+    Value: !GetAtt OutputSqsQueue.QueueName
+  OutputSqsQueueARN:
+    Description: SQS queue ARN
+    Value: !GetAtt OutputSqsQueue.Arn
+  OutputSqsQueueURL:
+    Description: SQS queue URL
+    Value: !Ref OutputSqsQueue
