@@ -20,6 +20,7 @@ impl AWSConfig {
   }
 }
 
+#[derive(Clone)]
 pub struct AWSClient {
   pub dynamo_db_client: aws_sdk_dynamodb::Client,
   pub sqs_client: aws_sdk_sqs::Client,

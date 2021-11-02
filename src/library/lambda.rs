@@ -7,28 +7,40 @@ pub mod handler {
   use crate::queries::get_product_by_id_query::GetByIdQuery;
   use crate::AWSClient;
   use aws_lambda_events::event::sqs::SqsEvent;
-  use futures::stream::{self, StreamExt};
+  use async_std::task;
   use lambda_runtime::{Context, Error};
   use uuid::Uuid;
+  use std::sync::Arc;
 
   pub async fn execute(client: &AWSClient, event: SqsEvent, _ctx: Context) -> Result<Option<Product>, Error> {
     log::info!("EVENT {:?}", event);
-    let mut records = stream::iter(event.records); // convert array in streams to use async
-
-    log::info!("records {:?}", records);
-    // processing one element at a time
-    while let Some(record) = records.next().await {
-      if let Some(body) = record.body {
-        let request: Request = serde_json::from_str(&body).unwrap();
-        if let Some(pk) = request.pk {
-          send_to_sqs(&client, &pk).await?;
+    let mut tasks = Vec::with_capacity(event.records.len());
+    let shared_client = Arc::from(client.clone());
+    for record in event.records.into_iter() {
+      let _shared_client = Arc::clone(&shared_client);
+      tasks.push(task::spawn(async move {
+        if let Some(body) = &record.body {
+          let request: Request = serde_json::from_str(&body).unwrap();
+          if let Some(pk) = request.pk {
+            send_to_sqs(&_shared_client, &pk)
+            .await
+            .map_or_else(|e| log::error!("Error from send_to_sqs {:?}", e), |_| ());
+          } else {
+            add(&_shared_client, request)
+            .await
+            .map_or_else(|e| log::error!("Error from add {:?}", e), |_| ());
+          }
         } else {
-          add(&client, request).await?;
+          log::error!("Empty body {:?}", record);
         }
-      } else {
-        log::error!("empty body");
-      }
+      }))
     }
+
+    task::block_on(async {
+        for t in tasks {
+            t.await;
+        }
+    });
 
     Ok(None)
   }
@@ -42,8 +54,7 @@ pub mod handler {
     // send to sqs
     let sqs_url = std::env::var("OUTPUT_SQS").expect("OUTPUT_SQS must be set");
     let msg_body = serde_json::to_string(&product).unwrap();
-    let result = client
-      .sqs_client
+    let result = client.sqs_client
       .send_message()
       .queue_url(sqs_url)
       .message_body(msg_body)
@@ -68,4 +79,3 @@ pub mod handler {
     Ok(())
   }
 }
-

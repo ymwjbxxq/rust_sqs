@@ -1,7 +1,6 @@
 
 use aws_lambda_events::event::sqs::SqsEvent;
 use crate::library::aws_client::AWSClient;
-use serde_json::Value;
 use crate::library::aws_client::AWSConfig;
 use lambda_runtime::{handler_fn, Error, Context};
 use log::LevelFilter;

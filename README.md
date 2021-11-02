@@ -1,1 +1,8 @@
 # rust_sqs
+
+// When you call .iter() on a Vec, the values the iterator produces are references to the values in the Vec - they're being borrowed. So you can't use them as-is from another thread. You need to move some owned value into the thread.
+// Rust's lifetime system needs to know that if you borrow something (i.e. have a reference to it), that underlying value will exist for the whole time that you borrow it. For regular function calls, this is easy, but threads cause problems here - a thread you start may outlive the function you start it from. So you can't borrow values into a thread, you have to move values into a thread (which is why you have to write thread::spawn(move || { not just thread::spawn(|| {.
+// When you call .iter() on a Vec, the values the iterator produces are references to the values in the Vec - they're being borrowed. So you can't use them as-is from another thread. You need to move some owned value into the thread.
+// There are a few ways you can go about this:
+// If you don't need the Vec after your processing, you could switch to use .into_iter() rather than .iter(). This will iterate over the owned values in the Vec, rather than borrowing them, which means you can move them into the threads. But because the Vec is giving up ownership of the items, your Vec stops being usable after that.
+// If you do need your Vec after, and your values are clonable (i.e. they implement the Clone trait), you could call .iter().cloned() instead of .iter() - this will make copies of each of the values, which you can then move into the thread.
