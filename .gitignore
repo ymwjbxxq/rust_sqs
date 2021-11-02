@@ -4,3 +4,4 @@ Cargo.lock
 .vscode/settings.json
 samconfig.toml
 rust.zip
+*.zip

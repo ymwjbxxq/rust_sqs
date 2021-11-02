@@ -29,6 +29,7 @@ impl AddQuery for AddProduct {
       .set_item(Some(request.to_dynamodb()))
       .send()
       .await?;
+     log::info!("Product added {:?}", res);
 
     Ok(())
   }

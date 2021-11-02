@@ -1,4 +1,5 @@
 pub mod handler {
+  use futures::future::join_all;
   use crate::dtos::request::Request;
   use crate::models::product::Product;
   use crate::queries::add_product_query::AddProduct;
@@ -7,7 +8,7 @@ pub mod handler {
   use crate::queries::get_product_by_id_query::GetByIdQuery;
   use crate::AWSClient;
   use aws_lambda_events::event::sqs::SqsEvent;
-  use async_std::task;
+  // use async_std::task;
   use lambda_runtime::{Context, Error};
   use uuid::Uuid;
   use std::sync::Arc;
@@ -18,7 +19,7 @@ pub mod handler {
     let shared_client = Arc::from(client.clone());
     for record in event.records.into_iter() {
       let _shared_client = Arc::clone(&shared_client);
-      tasks.push(task::spawn(async move {
+      tasks.push(tokio::spawn(async move {
         if let Some(body) = &record.body {
           let request: Request = serde_json::from_str(&body).unwrap();
           if let Some(pk) = request.pk {
@@ -36,11 +37,7 @@ pub mod handler {
       }))
     }
 
-    task::block_on(async {
-        for t in tasks {
-            t.await;
-        }
-    });
+    join_all(tasks).await;
 
     Ok(None)
   }
