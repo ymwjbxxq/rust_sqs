@@ -8,7 +8,6 @@ pub mod handler {
   use crate::queries::get_product_by_id_query::GetByIdQuery;
   use crate::AWSClient;
   use aws_lambda_events::event::sqs::SqsEvent;
-  // use async_std::task;
   use lambda_runtime::{Context, Error};
   use uuid::Uuid;
   use std::sync::Arc;
