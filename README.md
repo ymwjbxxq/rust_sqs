@@ -118,13 +118,17 @@ As usual, the best deal is with 1024 MB, but each case could be different.
 ### 3072 MB - READ and SEND ###
 ![picture](https://github.com/ymwjbxxq/rust_sqs/blob/main/readme/read_and_send-3072.png)
 
+### Build ###
+```
+make build
+```
+
 ### Deploy ###
 ```
-./deploy.sh
+make deploy
 ```
-It will take care to build, create the zip and run for you the sam deploy.
 
 ### Cleanup ###
 ```
-sam delete --stack-name STACK_NAME
+make delete
 ```

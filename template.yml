@@ -4,13 +4,15 @@ Description: sam-app
 
 Globals:
   Function:
+    MemorySize: 1024
+    Architectures: ["arm64"]
+    Handler: bootstrap
+    Runtime: provided.al2
     Timeout: 30
     Environment:
       Variables:
         RUST_BACKTRACE: 1
         RUST_LOG: info
-        TABLE_NAME: !Ref Table
-        OUTPUT_SQS: !Ref OutputSqsQueue
 
 Resources:
   Table:
@@ -33,10 +35,7 @@ Resources:
   HelloRustFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: bootstrap.is.real.handler
-      Runtime: provided
-      MemorySize: 128
-      CodeUri: ./rust.zip
+      CodeUri: build/handler/
       Events:
         MySQSEvent:
           Type: SQS
