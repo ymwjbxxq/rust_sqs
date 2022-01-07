@@ -1,4 +1,4 @@
-use crate::errors::error::Error;
+use crate::error::Error;
 use aws_sdk_dynamodb::model::AttributeValue;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -21,8 +21,8 @@ impl Product {
     retval.insert("pk".to_owned(), AttributeValue::S(self.pk.clone()));
     retval.insert("name".to_owned(), AttributeValue::S(self.name.clone()));
     retval.insert(
-        "price".to_owned(),
-        AttributeValue::N(format!("{:}", self.price)),
+      "price".to_owned(),
+      AttributeValue::N(format!("{:}", self.price)),
     );
 
     retval
@@ -38,7 +38,11 @@ impl Product {
     })
   }
 
-  fn get_key(key: &str, t: ValueType, item: &HashMap<String, AttributeValue>, ) -> Result<String, Error> {
+  fn get_key(
+    key: &str,
+    t: ValueType,
+    item: &HashMap<String, AttributeValue>,
+  ) -> Result<String, Error> {
     let v = item
       .get(key)
       .ok_or_else(|| Error::InternalError(format!("Missing '{}'", key)))?;

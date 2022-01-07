@@ -1,5 +1,5 @@
+use crate::error::Error;
 use crate::models::product::Product;
-use crate::errors::error::Error;
 use aws_sdk_dynamodb::Client;
 use async_trait::async_trait;
 

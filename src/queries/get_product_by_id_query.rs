@@ -1,4 +1,4 @@
-use crate::errors::error::Error;
+use crate::error::Error;
 use crate::models::product::Product;
 use aws_sdk_dynamodb::model::AttributeValue;
 use aws_sdk_dynamodb::Client;
